@@ -71,23 +71,44 @@ const LoginPage: React.FC = () => {
     setApiError("");
 
     try {
-      // Replace with your actual API endpoint
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      // Mock login - no actual API call
+      setIsLoading(true);
 
-      const data = await response.json();
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+      // Mock credentials check
+      const mockUsers = [
+        { email: "admin@example.com", password: "password123" },
+        { email: "user@example.com", password: "password123" },
+      ];
+
+      // Also check for users registered through the registration page
+      let registeredUsers = [];
+      try {
+        registeredUsers = JSON.parse(localStorage.getItem("mockUsers") || "[]");
+      } catch (e) {
+        console.error("Error parsing mockUsers from localStorage:", e);
       }
 
+      const allUsers = [...mockUsers, ...registeredUsers];
+
+      const user = allUsers.find(
+        (u) => u.email === formData.email && u.password === formData.password,
+      );
+
+      if (!user) {
+        throw new Error("Invalid email or password");
+      }
+
+      // Create a mock token
+      const mockToken = btoa(
+        JSON.stringify({ email: formData.email, timestamp: Date.now() }),
+      );
+
       // Store JWT token
-      localStorage.setItem("idms_token", data.token);
+      localStorage.setItem("idms_token", mockToken);
+      console.log("Token stored in localStorage:", mockToken);
 
       // Redirect to dashboard
       navigate("/");

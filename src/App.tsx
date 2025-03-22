@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./components/home";
 import routes from "tempo-routes";
@@ -10,16 +10,25 @@ const RegisterPage = lazy(() => import("./components/auth/RegisterPage"));
 function App() {
   // Check if user is authenticated
   const isAuthenticated = () => {
-    return localStorage.getItem("idms_token") !== null;
+    const token = localStorage.getItem("idms_token");
+    console.log("Authentication check - token exists:", !!token);
+    return token !== null;
   };
 
   // Protected route component
   const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (!isAuthenticated()) {
+    const authenticated = isAuthenticated();
+    console.log("Protected route - authenticated:", authenticated);
+    if (!authenticated) {
       return <Navigate to="/login" replace />;
     }
     return <>{children}</>;
   };
+
+  // Log authentication status on app load
+  useEffect(() => {
+    console.log("App loaded, authentication status:", isAuthenticated());
+  }, []);
 
   return (
     <Suspense

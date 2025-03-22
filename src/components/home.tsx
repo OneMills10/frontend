@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Header from "./dashboard/Header";
+import Sidebar from "./dashboard/Sidebar";
 import MetricsPanel from "./dashboard/MetricsPanel";
 import ThreatVisualization from "./dashboard/ThreatVisualization";
 import FilteringSystem from "./dashboard/FilteringSystem";
 import ThreatsList from "./dashboard/ThreatsList";
 import NotificationSystem from "./dashboard/NotificationSystem";
 import ThreatDetailModal from "./dashboard/ThreatDetailModal";
+import { useLocation } from "react-router-dom";
 
 // Mock socket for real-time updates
 const mockSocket = {
@@ -31,6 +33,8 @@ const mockSocket = {
 };
 
 const Home = () => {
+  const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showThreatDetails, setShowThreatDetails] = useState(false);
   const [selectedThreatId, setSelectedThreatId] = useState<string | null>(null);
@@ -117,42 +121,61 @@ const Home = () => {
     );
   };
 
+  // Toggle sidebar collapse state
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        onNotificationsClick={handleNotificationClick}
-        notificationCount={notifications.filter((n) => !n.read).length}
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
+        activePath={location.pathname}
       />
 
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Metrics Panel */}
-        <MetricsPanel
-          activeThreats={activeThreats}
-          recentEvents={recentEvents}
-          systemStatus={systemStatus}
-          threatLevel={threatLevel}
+      {/* Main Content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header
+          onNotificationsClick={handleNotificationClick}
+          notificationCount={notifications.filter((n) => !n.read).length}
         />
 
-        {/* Filtering System */}
-        <FilteringSystem
-          onFilterChange={(filters) => console.log("Filters changed:", filters)}
-        />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Threat Visualization */}
-          <div className="lg:col-span-3">
-            <ThreatVisualization
-              isLoading={isLoading}
-              onRefresh={handleRefreshData}
+        <main className="flex-1 overflow-auto bg-gray-50 p-6">
+          <div className="mx-auto max-w-7xl space-y-6">
+            {/* Metrics Panel */}
+            <MetricsPanel
+              activeThreats={activeThreats}
+              recentEvents={recentEvents}
+              systemStatus={systemStatus}
+              threatLevel={threatLevel}
             />
-          </div>
 
-          {/* Threats List */}
-          <div className="lg:col-span-3">
-            <ThreatsList onViewDetails={handleViewThreatDetails} />
+            {/* Filtering System */}
+            <FilteringSystem
+              onFilterChange={(filters) =>
+                console.log("Filters changed:", filters)
+              }
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Threat Visualization */}
+              <div className="lg:col-span-3">
+                <ThreatVisualization
+                  isLoading={isLoading}
+                  onRefresh={handleRefreshData}
+                />
+              </div>
+
+              {/* Threats List */}
+              <div className="lg:col-span-3">
+                <ThreatsList onViewDetails={handleViewThreatDetails} />
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Fixed position elements */}
       <div className="fixed bottom-6 right-6 z-40">
